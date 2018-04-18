@@ -1,0 +1,12 @@
+{
+    "name": "pc/cutom-menus",
+    "require": {
+        "yuuhi666/img-uploader": "1.0"
+    },
+    "authors": [
+        {
+            "name": "yughoz1",
+            "email": "alvianyusuf22@gmail.com"
+        }
+    ]
+}
