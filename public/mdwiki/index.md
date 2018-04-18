@@ -24,7 +24,7 @@ Installing Yuu LTE
 -------------------------
 * Clone or download from [git](https://github.com/yughoz/yuuLTE)
 * Create empty database mysql Ex : yuuDB
-* Rename .env.example to .env and fill the options.
+* Copy .env.example to .env and fill the options.
 * Run the following commands:
 ```bash
  composer install
