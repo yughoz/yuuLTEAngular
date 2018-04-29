@@ -133,20 +133,8 @@ return [
         [
             'text' => 'Users',
             'module_code' => 'users',
-            // 'url'  => 'users',
+            'url'  => 'users',
             'icon' => 'user',
-            'submenu' => [
-                [
-                    'text' => 'List Users',
-                    'module_code' => 'users',
-                    'url'  => 'users',
-                ],
-                [
-                    'text' => 'Change Password',
-                    'module_code' => 'password',
-                    'hidden' => true,
-                ],
-            ]
         ],
         [
             'text' => 'Security groups',
@@ -170,6 +158,38 @@ return [
             'module_code' => 'chats',
             'icon' => 'user',
             'url'  => 'chat',
+        ],        
+        /*'CRUD BOOSTER',
+        [
+            'text' => 'Modul Generator',
+            'module_code' => 'groups',
+            'icon' => 'th',
+            'submenu' => [
+                [
+                    'text' => 'Add New Module',
+                    'module_code' => 'groups',
+                    'url'  => 'addModule',
+                ],
+                [
+                    'text' => 'List Module',
+                    'module_code' => 'roles',
+                    'url'  => 'listModule',
+                ],
+            ]
+        ],*/
+        [
+            'text' => 'submenu',
+            'hidden' => true,
+            'submenu' => [
+                [
+                    'text' => 'Change Password',
+                    'module_code' => 'password',
+                ],
+                [
+                    'text' => 'Prince Barang',
+                    'module_code' => 'prince_barang',
+                ],
+            ]
         ],
 /*        [
             'text' => 'Change Password',

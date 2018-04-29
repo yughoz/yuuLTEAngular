@@ -138,6 +138,6 @@
                 { data: "{{$c['name']}}", name: "{{$c['name']}}" },
             @endforeach
         ]
-        groups_list.datat = data
-        groups_list.APIUrl = '{{url("API")}}/{{$APIUrl}}'
+        {{$jsClass}}.datat = data
+        {{$jsClass}}.APIUrl = '{{url("API")}}/{{$APIUrl}}'
     </script>

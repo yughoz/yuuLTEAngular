@@ -93,6 +93,27 @@
                 </div>
             </div> -->
         </div>
+        <div class="modal-header" style="padding-top: 30px">
+            <h4 class="modal-title">Reset Password</h4>
+          </div>
+          <div class="modal-body">         
+                <div class="form-group">
+                    <label for="password" class="col-sm-2 control-label">Password</label>
+                    <div class="col-sm-10">
+                        <input type="password" name="editMainpassword" value="" id="editMainpassword" class="form-control editMain" ng-model="fuu.password"/>
+                        <div class="progress" style="margin:0">
+                            <div class="pwstrength_viewport_progress"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password_confirm" class="col-sm-2 control-label">Password confirm</label>
+                    <div class="col-sm-10">
+                        <input type="password" name="editMainpassword_confirm" value="" id="editMainpassword_confirm" class="form-control editMain" ng-model="fuu.password_confirm"/>
+                    </div>
+                </div>
+
+          </div>
       
       <div id="wraperStatus"></div>
 
@@ -138,6 +159,6 @@
                 { data: "{{$c['name']}}", name: "{{$c['name']}}" },
             @endforeach
         ]
-        groups_list.datat = data
-        groups_list.APIUrl = '{{url("API")}}/{{$APIUrl}}'
+        {{$jsClass}}.datat = data
+        {{$jsClass}}.APIUrl = '{{url("API")}}/{{$APIUrl}}'
     </script>

@@ -37,6 +37,18 @@ Route::get('/admin/users', 'UsersController@index')->middleware('role:users');
 Route::get('/admin/editProfile', 'UsersController@editProfile')->name('userdata.editProfile')->middleware('role:users');
 
 
+#CRUD MODUL
+Route::get('/admin/addModule', 'ModulsController@getStep1');
+Route::get('/admin/listModule', 'ModulsController@getStep1');
+Route::get('/getModuleList', 'ModulsController@anyData');
+Route::get('/CRUDBOOSTER/check-slug/{id}', 'ModulsController@getCheckSlug');
+Route::post('/CRUDBOOSTER/ModulsControllerPostStep2', 'ModulsController@postStep2');
+Route::get('/CRUDBOOSTER/ModulsControllerGetStep1/{id}', 'ModulsController@getStep1');
+Route::get('/CRUDBOOSTER/ModulsControllerGetStep2/{id}', 'ModulsController@getStep2');
+Route::get('/CRUDBOOSTER/ModulsControllerGetStep3/{id}', 'ModulsController@getStep3');
+Route::get('/CRUDBOOSTER/ModulsControllerGetStep4/{id}', 'ModulsController@getStep4');
+
+
 
 Route::get('/admin/groups', 'GroupsController@index')->middleware('role:groups');
 Route::get('/admin/roles', 'RoleController@index')->middleware('role:roles');
@@ -49,6 +61,8 @@ Route::post('/userCreate','UsersController@create')->name('userdata.create')->mi
 Route::put('/API/userActive/{id}/{active}','UsersController@active')->name('userdata.active')->middleware('role:users--updateAcc');
 
 Route::group(['prefix' => 'API/user'], function(){
+	Route::get('/list','UsersController@anyData')->name('userdata.data')->middleware('role:users--readAcc');
+	Route::post('','UsersController@create')->middleware('role:users--createAcc');
 	Route::get('{id}','UsersController@get')->name('userdata.get')->middleware('role:users--readAcc');
 	Route::post('{id}','UsersController@update')->name('userdata.update')->middleware('role:users--updateAcc');
 	Route::delete('{id}','UsersController@delete')->name('userdata.delete')->middleware('role:users--deleteAcc');

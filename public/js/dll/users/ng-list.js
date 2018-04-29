@@ -20,7 +20,7 @@ toastrOptions : {
 
 init : function()	{
     self = this;
-
+    console.log(self.datat);
     $(document).ajaxStop($.unblockUI);
     toastr.options = self.toastrOptions;
 
@@ -35,13 +35,7 @@ init : function()	{
                 { "bSearchable": false, "aTargets": [ 2, 4 ] }
                 ],
         // ajax: '{!! route('userdata.data') !!}',
-        columns: [
-            { data: 'name', name: 'name' },
-            { data: 'email', name: 'email' },
-            { data: 'group_name', name: 'group_name' },
-            { data: 'active', name: 'active' },
-            { data: 'action', name: 'action' }
-        ]
+        columns: self.datat
     });
 
     $("#btnDelete").click(function(){	

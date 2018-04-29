@@ -2,25 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Users;
-use App\Groups;
 use Illuminate\Http\Request;
-use App\Http\Requests;
 use Yajra\DataTables\DataTables;
 use DB;
 use Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
 
-class UsersController extends Controller
+class UsersController extends YuuController
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    // use RegistersUsers;
-    
+
+    /*
+    *change "**$Var**" to example : $varUsers
+    *change **TBLNAME** to example : Users
+    *change **tblname** to example : users
+    */
+
+
     /**
      * Create a new controller instance.
      *
@@ -28,29 +25,77 @@ class UsersController extends Controller
      */
     public function __construct(Request $request)
     {
-        $this->log = new \App\library\logging;
-        $this->log->request = $request->all();
         $this->middleware('auth');
+
+
+        $this->table = "users";
+        $this->accessRole = "users";
+        $this->label = "Users";
+        $this->title = "Users Managementss";
+        $this->jsClass = "users_list";
+        $this->APIUrl = "user";
+        $this->action_btn = true;
+        $this->action_btn_add = true;
+        $this->action_btn_edit = true;
+        $this->action_btn_delete = true;
+
+        # START COLUMNS DO NOT REMOVE THIS LINE
+        #datatables config
+        $this->col = array();
+        $this->col[] = array("label"=>"Name","name"=>"name");
+        $this->col[] = array("label"=>"Email","name"=>"email");
+        $this->col[] = array("label"=>"Groups","name"=>"group_name","dbcustom"=>true);
+        $this->col[] = array("label"=>"Status","name"=>"active");
+        $this->col[] = array("label"=>"Action","name"=>"action","dbcustom"=>true);
+        $this->col[] = array("name" =>"id");
+        $this->col[] = array("name" =>"group_id");
+        # END COLUMNS DO NOT REMOVE THIS LINE
+
+
+        # START FORM DO NOT REMOVE THIS LINE
+
+            $this->form = [];
+            $this->form[] = ['label'=>'Username','name'=>'name','type'=>'text','validation'=>'required|min:1|max:255'];
+            $this->form[] = ['label'=>'Email','name'=>'email','type'=>'email','validation'=>'required|string|email|max:255|unique:users'];
+            $this->form[] = ['label'=>'Phone','name'=>'phone','type'=>'number','atrib'=>['pattern' => '^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$'],'validation'=>'required|min:1|max:255'];
+            $this->form[] = ['label'=>'Gender','name'=>'sex','type'=>'select','option'=>['l' => 'Male','p'=> 'Female'],'validation'=>'required|string|max:2'];
+            $this->form[] = ['label'=>'Password','name'=>'password','type'=>'password','validation'=>'required|string|min:6|same:password_confirm',"unset" => true];
+            $this->form[] = ['label'=>'Password confirm','name'=>'password_confirm','type'=>'password','validation'=>'required|string|min:6',"dbcustom"=>true];
+            // $this->form[] = ['name'=>'id','type'=>'hiden','validation'=>''];
+            // $this->form[] = ['name'=>'group_id','type'=>'hiden','validation'=>''];
+
+            $this->formEdit = [];
+            $this->formEdit[] = ['label'=>'Username','name'=>'name','type'=>'text','validation'=>'required|min:1|max:255'];
+            $this->formEdit[] = ['label'=>'Email','name'=>'email','type'=>'email','validation'=>'required|string|email|max:255'];
+            $this->formEdit[] = ['label'=>'Phone','name'=>'phone','type'=>'number','atrib'=>['pattern' => '^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$'],'validation'=>'required|min:1|max:255'];
+            $this->formEdit[] = ['label'=>'Gender','name'=>'sex','type'=>'select','option'=>['l' => 'Male','p'=> 'Female'],'validation'=>'required|string|max:2'];
+            $this->formEdit[] = ['label'=>'Member of Group','name'=>'group_id','type'=>'select','option_from'=>['table'=>'groups','key' => 'id' ,'label' => 'name'],'validation'=>'required|string|max:2'];
+            $this->formEdit[] = ['name'=>'id','type'=>'hiden','validation'=>'required'];
+
+        # END FORM DO NOT REMOVE THIS LINE
+
+        $this->yuuInit($request);
     }
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
-        // echo "string";
-        $groups = Groups::all();
-        return view('user.list', compact('groups'));
+        return $this->yuuView('user.listCustom');
+        // $col = $this->columndt();
+        // $title = $this->title;
+        // $label = $this->label;
+        // $APIUrl = $this->APIUrl;
+        // $jsClass = $this->jsClass;
+        // $action_btn_add = $this->action_btn_add;
+        // $formsAdd = $this->formHtml($this->form);
+        // $formsEdit = $this->formHtml($this->formEdit,'editMain');
+        // return view('vendor.yuu.list',compact('title','jsClass','col','label','APIUrl','formsAdd','formsEdit' ,'action_btn_add'));
     }
-    
-    public function editProfile()
-    {
-        // echo "string";
-        // $user = Users::where('id', Auth::user()->id)->first();
-        // echo print_r($user);
-        return view('user.editProfile',compact('user'));
-    }
-    
-    public function getIndex()
-    {
-        return view('datatables.index');
-    }
+
     /**
      * Process datatables ajax request.
      *
@@ -58,45 +103,26 @@ class UsersController extends Controller
      */
     public function anyData()
     {
-        $users = DB::table('users')
-            ->select(['users.name', 'users.id', 'users.email', 'users.group_id', 'users.created_at',
-                'users.updated_at', 'users.active']);
-        
-        $this->log->apiLog('api_list_user');
-        return Datatables::of($users)
-            ->addColumn('action', function ($users) {
-                    $actionHtml = "";
-                    if (checkAccess('users','updateAcc')) {
-                        $actionHtml .= '<a class="btn btn-xs btn-primary" onclick="users_list.editModal('.$users->id.')"><i class="glyphicon glyphicon-edit"></i> Edit</a> ';
-                    }
-                    if (checkAccess('users','deleteAcc')) {
-                        $actionHtml .= '<a class="btn btn-xs btn-danger" onclick="users_list.deleteModal('.$users->id.')"><i class="glyphicon glyphicon-remove"></i> Delete</a>';
-                    }
-
-                    return empty($actionHtml) ? "No action" : $actionHtml;
-                })
-            ->addColumn('group_name', function ($users) {
-                    $groups = DB::table('groups')->where('id', $users->group_id)->first();
-                    if (!empty($groups)) {
-                        return '<a ><span class="label" style="background:'.str_replace("-light", "", $groups->bgcolor).';">'.$groups->name.'</span></a>';
-                    } else {
-                        return '<a ><span class="label" style="background:grey;"> Not Set</span></a>';
-                    }
-                })
-            ->addColumn('num', function ($users) {
-                    return 1;
-                })
-            ->editColumn('active', function ($users) {
+        $datatables = $this->datatables();
+        $datatables->addColumn('group_name', function ($table) {
+            $groups = DB::table('groups')->where('id', $table->group_id)->first();
+            if (!empty($groups)) {
+                return '<a ><span class="label" style="background:'.str_replace("-light", "", $groups->bgcolor).';">'.$groups->name.'</span></a>';
+            } else {
+                return '<a ><span class="label" style="background:grey;"> Not Set</span></a>';
+            }
+        });
+        $datatables->editColumn('active', function ($users) {
                 $checked =  ($users->active) ? "checked" : "";
                 $checkedHtml =  ($users->active) ? "Active" : "Inactive";
                 $activeHTML = '<a onclick="users_list.changeStatus('.$users->id.')"><input type="checkbox" '.$checked.' class="btnC" id="check'.$users->id.'"></a>';
 
                 return checkAccess('users','editAcc') ? $activeHTML : $checkedHtml;
-                })
-            ->escapeColumns([])
-            ->make(true);
+                });
+        $datatables->escapeColumns([]);
+        #custome datatable yajra in here        
+        return $datatables->make(true);
     }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -104,191 +130,65 @@ class UsersController extends Controller
      */
     public function create(Request $request)
     {
-        //
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|same:password_confirm',
-            'sex' => 'required|string|max:2',
-            'password_confirm' => 'required|string|min:6|',
-        ]);
-
-        if ($validator->passes()) {
-            // $result =  Users::create([
-            //     'name' => $request->input('name'),
-            //     'email' => $request->input('email'),
-            //     'password' => bcrypt($request->input('password')),
-            //     'group_id' =>  config('adminlte.default_group'),
-            // ]);
-            $resultID = Users::insertGetId(
-                array(  
-                    'name' => $request->input('name'),
-                    'email' => $request->input('email'),
-                    'phone' => $request->input('phone'),
-                    'sex' => $request->input('sex'),
-                    'password' => bcrypt($request->input('password')),
-                    'group_id' =>  config('adminlte.default_group'),
-                    'created_at' => new \DateTime(),
-                    'updated_at' => new \DateTime(),
-                    )
-            );
-            // echo json_encode($request->input('name'));
-            // echo json_encode($resultID);
-            $result = [
-                        'status'=>'success',
-                        'statusCode'=>'201',
-                        'desc'=>'success insert data',
-                        'lastID'=> $resultID,
-                        'success'=>'Added new records.'
-                    ];
-            $this->log->apiLog('api_create_user',$result);
-            return response()->json($result);
-        } else {
-            $valid = [
-                        'status' => "validate",
-                        'statusCode' => 501,
-                        "desc" => "Validate",
-                        "error" => $validator->errors()->all(),
-                    ];
-            // $valid['status'] = "validate";
-            // $valid['statusCode'] = 501;
-            // $valid["desc"] = "Validate";
-            // $valid["error"] = $validator->errors()->all();
-            $this->log->apiLog('api_create_user',$valid);
-            return response()->json($valid);
-        }
-
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-    public function active($uID , $active)
-    {
-        //
-        // $active = $active == "true" ? 1 : 0 ;
-        Users::where('id', $uID)
-            ->update(['active' => $active]);
-
-         return response()->json([
-                                    'status'=>'success',
-                                    'statusCode'=>'202',
-                                    'active'=> $active,
-                                    'desc'=>'success update data',
-                                ]);
+        return $this->createAPI($request);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Users  $users
+     * @param  \App\Groups  
      * @return \Illuminate\Http\Response
      */
     public function get($uID)
     {
-        $user = Users::where('id', $uID)->first();
-        // $user = Users::findOrFail($uID);
-                    // ->where('id', $uID)->first();
+        return $this->getAPI($uID,$this->formEdit);
 
-       return response()->json([
-                                    'status'=>'success',
-                                    'statusCode'=>'202',
-                                    'data'=> $user,
-                                    'desc'=>'exists',
-                                ]);
-    }
-
-    public function show(Users $users)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Users  $users
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Users $users)
-    {
-        //
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Users  $users
+     * @param  \App\Groups  $groups
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $uID)
     {
-        $pars = array();
-        foreach ($request->all() as $key => $value) {
-            $pars[str_replace("editUser_", "", $key)] = $value;
-        }
-        $valid = [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255',
-            'sex' => 'required|string|max:2',
-            'phone' => 'required|numeric',
-        ];
+        return $this->updateAPI($request,$uID, $this->formEdit);
+        
+    }
+     
+    public function hook_before_edit_api(&$arrUpdate ,$request ) {
+         if (!empty($request['editMainpassword'])) {
+            $pars['password'] = $request['editMainpassword'];
+            $pars['password_confirm'] = $request['editMainpassword_confirm'];
 
-        if (!empty($pars['group_id'])) {
-            $valid['group_id'] = 'required|integer';
-        }
-        if (!empty($pars['password'])) {
             $valid['password'] = 'required|string|min:6|same:password_confirm';
             $valid['password_confirm'] = 'required|string|min:6|';
-        }
-        // echo json_encode($pars);
-        $validator = Validator::make($pars, $valid);
+            $validator = Validator::make($pars, $valid);
 
-        if ($validator->passes()) {
-            $backUp = Users::where('id', $uID)->first()->toArray();
-            $arrUpdate = [
-                                'name' => $pars['name'],
-                                'email' => $pars['email'],
-                                'sex' => $pars['sex'],
-                                'phone' => $pars['phone'],
-                            ];
-            if (!empty($pars['group_id'])) {
-                $arrUpdate['group_id'] = $pars['group_id'];
-            }
-            if (!empty($pars['password'])) {
+            if ($validator->passes()) {
                 $arrUpdate['password'] = bcrypt($pars['password']);
+
+            } else {;
+                $result = [
+                            'status'=>'validate',
+                            'statusCode'=>'501',
+                            'desc'=>'Validate',
+                            'uID'=>$uID,
+                            'error' => $validator->errors()->all()
+                          ];
+                return response()->json($result);
             }
-            Users::where('id', $uID)
-                    ->update($arrUpdate);
-
-            $result = [
-                        'status'=>'success',
-                        'statusCode'=>'202',
-                        'desc'=>'success update data',
-                        'uID'=>$uID,
-                        'success'=>'Added new records.'
-                      ];
-            // $this->log->apiLog('backup_update_users',$backUp,'backup');
-        } else {;
-            $result = [
-                        'status'=>'validate',
-                        'statusCode'=>'501',
-                        'desc'=>'Validate',
-                        'uID'=>$uID,
-                        'error' => $validator->errors()->all()
-                      ];
         }
-
-        $this->log->apiLog('api_update_user',compact('result','backUp'));
-        return response()->json($result);
     }
+
+    public function editProfile()
+    {
+
+        return view('user.editProfile',compact('user'));
+    }
+    
     public function updateProfile(Request $request)
     {
         $uID = Auth::user()->id;
@@ -308,7 +208,7 @@ class UsersController extends Controller
         $validator = Validator::make($pars, $valid);
 
         if ($validator->passes()) {
-            $backUp = Users::where('id', $uID)->first()->toArray();
+            $this->backUp($uID,'update');
             $arrUpdate = [
                                 'phone' => $pars['phone'],
                             ];
@@ -316,7 +216,7 @@ class UsersController extends Controller
             if (!empty($pars['password'])) {
                 $arrUpdate['password'] = bcrypt($pars['password']);
             }
-            Users::where('id', $uID)
+            DB::table($this->table)->where('id', $uID)
                     ->update($arrUpdate);
 
             $result = [
@@ -336,11 +236,8 @@ class UsersController extends Controller
                         'error' => $validator->errors()->all()
                       ];
         }
-
-        $this->log->apiLog('api_update_user',compact('result' , 'backUp'));
         return response()->json($result);
     }
-
     /**
      * Remove the specified resource from storage.
      *
@@ -349,24 +246,35 @@ class UsersController extends Controller
      */
     public function delete($uID)
     {
-        // echo Auth::user()->id;
+        return $this->deleteAPI($uID);
+    }
+
+
+    public function active($uID , $active)
+    {
+        //
+        // $active = $active == "true" ? 1 : 0 ;
+        DB::table($this->table)->where('id', $uID)
+            ->update(['active' => $active]);
+
+         return response()->json([
+                                    'status'=>'success',
+                                    'statusCode'=>'202',
+                                    'active'=> $active,
+                                    'desc'=>'success update data',
+                                ]);
+    }
+
+
+    public function hook_before_delete($uID) {
         if (Auth::user()->id == $uID) {
-            $this->log->apiLog('api_delete_users',['uID'=>$uID]);
+            $this->apiLog('api_delete_group',['uID'=>$uID]);
             return response()->json([
                                             'status'=>'delete',
                                             'statusCode'=>'504',
-                                            'desc'=>"can't delete your use group"
+                                            'desc'=>"can't delete your use id"
                                         ]);
         }
-        $backUp = Users::where('id', $uID)->first()->toArray();
-        Users::where('id', $uID)
-            ->delete();
-        // $this->log->apiLog('backup_delete_users',$backUp,'backup');
-        $this->log->apiLog('api_delete_users',compact('uID','backUp'));
-        return response()->json([
-                                        'status'=>'delete',
-                                        'statusCode'=>'204',
-                                        'desc'=>'success delete data'
-                                    ]);
     }
+
 }

@@ -69,7 +69,7 @@ yuuAPP.config(function($stateProvider, $urlRouterProvider, $ocLazyLoadProvider ,
                       'vendor/adminlte/vendor/toastr-master/toastr.js',
                       'vendor/adminlte/vendor/blockui-master/jquery.blockUI.js',
                       'vendor/adminlte/vendor/bootstrap-toggle-master/js/bootstrap-toggle.js',
-                      'js/dll/users/ng-list.js',
+                      'js/dll/users/listYuu.js',
                     ]
                   })
                 }
@@ -128,7 +128,7 @@ yuuAPP.config(function($stateProvider, $urlRouterProvider, $ocLazyLoadProvider ,
             url: '/groups',
             templateUrl: 'admin/groups',
             controller: function($scope) {
-                $scope.title = "Groups Management";
+                // $scope.title = "Groups Management";
                 groups_list.baseUrl = yuuAPP.baseUrl; 
                 groups_list.init();
 
@@ -146,6 +146,36 @@ yuuAPP.config(function($stateProvider, $urlRouterProvider, $ocLazyLoadProvider ,
                       'vendor/adminlte/plugins/bootstrap-colorpickersliders-master/dist/bootstrap.colorpickersliders.min.js',
                       'vendor/adminlte/plugins/bootstrap-colorpickersliders-master/tynycolor.min.js',
                       'js/dll/groups/list.js',
+                      {type: 'css', path: 'vendor/adminlte/vendor/datatables/dataTables.bootstrap.css'},
+                      {type: 'css', path: 'vendor/adminlte/vendor/toastr-master/build/toastr.css'},
+                      {type: 'css', path: 'vendor/adminlte/plugins/bootstrap-colorpickersliders-master/dist/bootstrap.colorpickersliders.min.css'},
+                    ]
+                  })
+                }
+              }
+        })
+        .state('listModule', {
+            url: '/listModule',
+            templateUrl: 'admin/listModule',
+            controller: function($scope) {
+                $scope.title = "Module Management";
+                module_list.baseUrl = yuuAPP.baseUrl; 
+                module_list.init();
+
+            },
+            resolve: {
+                loadMyFiles: function($ocLazyLoad) {
+                  return $ocLazyLoad.load({
+                    name: 'yuuAPP',
+                    files: [
+                      'vendor/adminlte/vendor/datatables/jquery.dataTables.min.js',
+                      'vendor/adminlte/vendor/datatables/dataTables.bootstrap.min.js',
+                      'vendor/adminlte/vendor/toastr-master/toastr.js',
+                      'vendor/adminlte/vendor/blockui-master/jquery.blockUI.js',
+                      'vendor/adminlte/vendor/bootstrap-toggle-master/js/bootstrap-toggle.js',
+                      'vendor/adminlte/plugins/bootstrap-colorpickersliders-master/dist/bootstrap.colorpickersliders.min.js',
+                      'vendor/adminlte/plugins/bootstrap-colorpickersliders-master/tynycolor.min.js',
+                      'js/dll/module/list.js',
                       {type: 'css', path: 'vendor/adminlte/vendor/datatables/dataTables.bootstrap.css'},
                       {type: 'css', path: 'vendor/adminlte/vendor/toastr-master/build/toastr.css'},
                       {type: 'css', path: 'vendor/adminlte/plugins/bootstrap-colorpickersliders-master/dist/bootstrap.colorpickersliders.min.css'},

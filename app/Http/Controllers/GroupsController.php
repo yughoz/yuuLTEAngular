@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Groups;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use DB;
 use Auth;
 use Illuminate\Support\Facades\Validator;
 
-class GroupsController extends Controller
+class GroupsController extends YuuController
 {
 
     /*
@@ -27,8 +26,39 @@ class GroupsController extends Controller
     public function __construct(Request $request)
     {
         $this->middleware('auth');
-        $this->log = new \App\library\logging;
-        $this->log->request = $request->all();
+
+
+        $this->table = "groups";
+        $this->accessRole = "groups";
+        $this->label = "Groups";
+        $this->title = "Groups Managementss";
+        $this->jsClass = "groups_list";
+        $this->APIUrl = "Groups";
+        $this->action_btn = true;
+        $this->action_btn_add = true;
+        $this->action_btn_edit = true;
+        $this->action_btn_delete = true;
+
+        # START COLUMNS DO NOT REMOVE THIS LINE
+        #datatables config
+        $this->col = array();
+        $this->col[] = array("label"=>"Name","name"=>"name");
+        $this->col[] = array("label"=>"Descrition","name"=>"description");
+        $this->col[] = array("label"=>"Color","name"=>"bgcolor");
+        $this->col[] = array("label"=>"Action","name"=>"action","dbcustom"=>true);
+        $this->col[] = array("name" =>"id");
+        # END COLUMNS DO NOT REMOVE THIS LINE
+
+
+        # START FORM DO NOT REMOVE THIS LINE
+            $this->form = [];
+            $this->form[] = ['label'=>'Name','name'=>'name','type'=>'text','validation'=>'required|min:1|max:255'];
+            $this->form[] = ['label'=>'Descrition','name'=>'description','type'=>'text','validation'=>'required|min:1|max:255'];
+            $this->form[] = ['label'=>'Color','name'=>'bgcolor','type'=>'select','option'=>['blue' => 'Blue','black' => 'Black','purple' => 'Purple','yellow' => 'Yellow','red' => 'Red','green' => 'Green','blue-ligh' => 'Blue-Light','black-light' => 'Black-Light','purple-light' => 'Purple-Light','yellow-light' => 'Yellow-Light','red-light' => 'Red-Light','green-light' => 'Green-Light'],'validation'=>'required|min:1|max:255'];
+            $this->formEdit = $this->form;
+        # END FORM DO NOT REMOVE THIS LINE
+
+        $this->yuuInit($request);
     }
     
     /**
@@ -38,7 +68,7 @@ class GroupsController extends Controller
      */
     public function index()
     {
-        return view('groups.list');
+        return $this->yuuView();
     }
 
     /**
@@ -48,27 +78,9 @@ class GroupsController extends Controller
      */
     public function anyData()
     {
-        $groups = DB::table('groups')
-            ->select(['groups.name', 'groups.id', 'groups.description', 'groups.bgcolor']);
-            
-        $this->log->apiLog('api_list_group');
-        return Datatables::of($groups)
-            ->addColumn('action', function ($groups) {
-                $actionHtml = "";
-                if (checkAccess('groups','updateAcc')) {
-                    $actionHtml .= '<a class="btn btn-xs btn-primary" onclick="groups_list.editModal('.$groups->id.')"><i class="glyphicon glyphicon-edit"></i> Edit</a> ';
-                }
-                if (checkAccess('groups','updateAcc')) {
-                    $actionHtml .= '<a class="btn btn-xs btn-danger" onclick="groups_list.deleteModal('.$groups->id.')"><i class="glyphicon glyphicon-remove"></i> Delete</a> ';
-                }
-                    return empty($actionHtml) ? "No action" : $actionHtml;
-                })
-
-            /*->editColumn('bgcolor', function ($groups) {
-                return '<i class="fa fa-stop" style="color:'.$groups->bgcolor.'"></i>';
-                })*/
-            ->escapeColumns([])
-            ->make(true);
+        $datatables = $this->datatables();
+        #custome datatable yajra in here        
+        return $datatables->make(true);
     }
     /**
      * Show the form for creating a new resource.
@@ -77,40 +89,7 @@ class GroupsController extends Controller
      */
     public function create(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
-            'bgcolor' => 'required|string|max:20',
-        ]);
-
-        if ($validator->passes()) {
-            $resultID = Groups::insertGetId(
-                array(  
-                    'name' => $request->input('name'),
-                    'description' => $request->input('description'),
-                    'bgcolor' => $request->input('bgcolor')
-                    )
-            );
-
-            $result = [
-                            'status'=>'success',
-                            'statusCode'=>'201',
-                            'desc'=>'success insert data',
-                            'lastID'=> $resultID,
-                            'success'=>'Added new records.'
-                        ];
-    } else {
-            $result = [
-                            'status'=>'validate',
-                            'statusCode'=> 501,
-                            'desc'=>'Validate',
-                            'error'=> $validator->errors()->all()
-                        ];
-        }
-
-        $this->log->apiLog('api_create_groups',$result);        
-        return response()->json($result);
-
+        return $this->createAPI($request);
     }
 
     /**
@@ -121,17 +100,8 @@ class GroupsController extends Controller
      */
     public function get($uID)
     {
-        $dataGroups = Groups::where('id', $uID)->first();
-        // $user = Groups::findOrFail($uID);
-                    // ->where('id', $uID)->first();
+        return $this->getAPI($uID);
 
-        $this->log->apiLog('api_get_groups',$uID);
-        return response()->json([
-                                    'status'=>'success',
-                                    'statusCode'=>'202',
-                                    'data'=> $dataGroups,
-                                    'desc'=>'exists',
-                                ]);
     }
 
     /**
@@ -143,44 +113,8 @@ class GroupsController extends Controller
      */
     public function update(Request $request, $uID)
     {
-        $pars = array();
-        foreach ($request->all() as $key => $value) {
-            $pars[str_replace("editGroups_", "", $key)] = $value;
-        }
-        $validator = Validator::make($pars, [
-            'name' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
-            'bgcolor' => 'required|string|max:20',
-            // 'password' => 'required|string|min:6|same:password_confirm',
-            // 'password_confirm' => 'required|string|min:6|',
-        ]);
-
-        if ($validator->passes()) {
-            $backUp = Groups::where('id', $uID)->first();
-            $this->log->apiLog('backup_update_groups',$backUp,'backup');
-            Groups::where('id', $uID)
-                    ->update([
-                                'name' => $pars['name'],
-                                'description' => $pars['description'],
-                                'bgcolor' => $pars['bgcolor'],
-                            ]);
-
-            $result = [
-                            'status'=>'success',
-                            'statusCode'=>'202',
-                            'desc'=>'success update data',
-                            'success'=>'Added new records.'
-                        ];
-        } else {
-            $result = [
-                            'status'=>'validate',
-                            'statusCode'=>'501',
-                            'desc'=>'Validate',
-                            'error' => $validator->errors()->all()
-                        ];
-        }
-        $this->log->apiLog('api_get_groups',$result);
-        return response()->json($result);
+        return $this->updateAPI($request,$uID, $this->form);
+        
     }
      
     /**
@@ -191,25 +125,24 @@ class GroupsController extends Controller
      */
     public function delete($uID)
     {
+        return $this->deleteAPI($uID);
+    }
+
+
+    public function hook_before_delete($uID) {
         if (Auth::user()->group_id == $uID) {
-            $this->log->apiLog('api_delete_group',['uID'=>$uID]);
+            $this->apiLog('api_delete_group',['uID'=>$uID]);
             return response()->json([
                                             'status'=>'delete',
                                             'statusCode'=>'504',
                                             'desc'=>"can't delete your use id"
                                         ]);
         }
-        $backUp = Groups::where('id', $uID)->first()->toArray();
-        $this->log->apiLog('api_delete_group',$backUp);
+    }
+
+    public function hook_after_delete($uID) {
         DB::table('group_access')
-        ->where('id', $uID)
+        ->where('group_id', $uID)
             ->delete();
-        Groups::where('id', $uID)
-            ->delete();
-        return response()->json([
-                                        'status'=>'delete',
-                                        'statusCode'=>'204',
-                                        'desc'=>'success delete data'
-                                    ]);
     }
 }

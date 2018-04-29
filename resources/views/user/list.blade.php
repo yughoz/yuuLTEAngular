@@ -17,11 +17,9 @@
                     <table class="table table-striped table-hover" id="tblUser">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Groups</th>
-                                <th>Status</th>
-                                <th>Action</th>
+                             @foreach($col as $c)
+                                <th>{{$c['label']}}</th>
+                            @endforeach
                             </tr>
                         </thead>
                         <tbody>
@@ -222,9 +220,10 @@
 </section>
 
     <script type="text/javascript" language="javascript" > 
-        
-        // var app = angular.module("createUserApp", []);
-        // list.baseUrl = "{{ url('') }}/"; 
-        // list.app = app;
-        // list.init();
+        data = [
+            @foreach($col as $c)
+                { data: "{{$c['name']}}", name: "{{$c['name']}}" },
+            @endforeach
+        ]
+        users_list.datat = data
     </script>

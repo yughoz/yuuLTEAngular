@@ -1,4 +1,4 @@
-groups_list = {
+main_list = {
 
 baseUrl : "",
 idDelete : "",

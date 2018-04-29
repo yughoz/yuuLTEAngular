@@ -1,8 +1,8 @@
-groups_list = {
+module_list = {
 
 baseUrl : "",
 idDelete : "",
-APIUrl : "",
+app : "",
 toastrOptions : {
 				  "closeButton": true,
 				  "debug": false,
@@ -20,16 +20,21 @@ toastrOptions : {
 
 init : function()	{
     self = this;
-
+    console.log(self.datat);
+    $(document).ajaxStop($.unblockUI);
     toastr.options = self.toastrOptions;
-    self.tblMain = $('#tblMain').DataTable({
+
+
+
+    self.tblModule = $('#tblModule').DataTable({
         processing: true,
         serverSide: true,
-        ajax: self.APIUrl+"/list",
+        ajax: module_list.baseUrl+"getModuleList",
         "aoColumnDefs": [
-        		{ "bSortable": false, "aTargets": [ 3 ] }, 
-                { "bSearchable": false, "aTargets": [ 3 ] }
+        		{ "bSortable": false, "aTargets": [ 2, 4 ] }, 
+                { "bSearchable": false, "aTargets": [ 2, 4 ] }
                 ],
+        // ajax: '{!! route('moduledata.data') !!}',
         columns: self.datat
     });
 
@@ -37,23 +42,33 @@ init : function()	{
 			self.deleteConfirm(self.idDelete);
 		});
 
-	$('#tblMain').on( 'draw.dt', function () {
-	   
+	$('#tblModule').on( 'draw.dt', function () {
+	    // alert( 'Table redrawn' );
+	    // $('.btnC').bootstrapToggle();
+	    $('.btnC').bootstrapToggle({
+	      size:"mini",
+	      on: 'Active',
+	      off: 'Inactive'
+	    });
 	} );
 
     $(document).ajaxStop($.unblockUI);
-    $("#form-create_main").on('submit',(function(e) {
+    
+    $("#form-create_module").on('submit',(function(e) {
 			e.preventDefault();
-			$('#bgcolor').modal('hide');
+			alert("test");
+			// $("#message").empty();
+			// $('#createUserModal').modal('hide');
 			$.blockUI({
 				// 
                 message: '<h4>  Please wait... <img src='+self.baseUrl+'public/images/spinner.gif></h4>',
             });
 			$.ajax({
 				headers: {
-		            'X-CSRF-TOKEN': $('meta[name="yuu-token"]').attr('content')
-		        },
-				url: self.APIUrl, // Url to which the request is send
+			        // "APIKey": self.APIKey,
+			    },
+				// url: self.baseUrl+"ajaxAddQuotes", // Url to which the request is send
+				url: self.urlData, // Url to which the request is send
 				type: "POST",             // Type of request to be send, called as method
 				data: new FormData(this), // Data sent to server, a set of key/value pairs (i.e. form fields and values)
 				contentType: false,       // The content type used when sending data to the server.
@@ -62,34 +77,38 @@ init : function()	{
 				success: function(resp)   // A function to be called if request succeeds
 				{
 					try {
+						console.log(resp.desc);
+						// parseData = $.parseJSON(resp);
 						parseData = resp;
 						if(parseData['statusCode'] == 201){
-							document.getElementById("form-create_main").reset();
-							self.tblMain.draw();
+							// urlDetailForm = "<p>Add Answer click <a href='"+self.baseUrl+"admin/form/"+parseData["idCreate"]+"'>here</a>";
+							document.getElementById("form-modul1").reset();
 							toastr.success(parseData['desc']);
 						} else{
 							toastr.warning(parseData['desc']);
 							toastr.warning(parseData['error'].join('<br>'));
-							$('#createMainModal').modal('show');
+							$('#createUserModal').modal('show');
 						}
 					} catch(e) {
 						console.log(e);
             			toastr.error('Internal Server Error');
-						$('#createMainModal').modal('show');
+						$('#createUserModal').modal('show');
 					}
 				},
 	            error: function (data) {
 	                console.log('Error:', data);
             		toastr.error('Connection Error');
-					$('#createMainModal').modal('show');
+					$('#createUserModal').modal('show');
 	            }
 			});
 		}));
 
-    $("#form-edit_main").on('submit',(function(e) {
+    $("#form-edit_module").on('submit',(function(e) {
 			e.preventDefault();
-			$('#editMainModal').modal('hide');
+			// $("#message").empty();
+			$('#editModuleModal').modal('hide');
 			$.blockUI({
+				// 
                 message: '<h4>  Please wait... <img src='+self.baseUrl+'public/images/spinner.gif></h4>',
             });
 			$.ajax({
@@ -97,7 +116,7 @@ init : function()	{
 		            'X-CSRF-TOKEN': $('meta[name="yuu-token"]').attr('content')
 		        },
 				// url: self.baseUrl+"ajaxAddQuotes", // Url to which the request is send
-				url: self.APIUrl+"/"+$(".editMain[name=editMainid]").val(), // Url to which the request is send
+				url: self.baseUrl+"/API/module/"+$(".editModule[name=editModule_id]").val(), // Url to which the request is send
 				type: "POST",             // Type of request to be send, called as method
 				data: new FormData(this), // Data sent to server, a set of key/value pairs (i.e. form fields and values)
 				contentType: false,       // The content type used when sending data to the server.
@@ -111,31 +130,30 @@ init : function()	{
 						parseData = resp;
 						if(parseData['statusCode'] == 202){
 							// urlDetailForm = "<p>Add Answer click <a href='"+self.baseUrl+"admin/form/"+parseData["idCreate"]+"'>here</a>";
-							document.getElementById("form-edit_main").reset();
-							self.tblMain.draw();
+							// document.getElementById("form-edit_module").reset();
+							self.tblModule.draw();
 							toastr.success(parseData['desc']);
 						} else{
 							toastr.warning(parseData['desc']);
 							toastr.warning(parseData['error'].join('<br>'));
-							$('#editMainModal').modal('show');
+							$('#editModuleModal').modal('show');
 						}
 					} catch(e) {
 						console.log(e);
             			toastr.error('Internal Server Error');
-						$('#editMainModal').modal('show');
+						$('#editModuleModal').modal('show');
 					}
 				},
 	            error: function (data) {
 	                console.log('Error:', data);
             		toastr.error('Connection Error');
-					$('#editMainModal').modal('show');
+					$('#editModuleModal').modal('show');
 	            }
 			});
 		}));
 
   },
 	
-
 	deleteConfirm : function(uid)	{
 	    self = this;
 		$('#deleteModal').modal('hide');
@@ -149,17 +167,17 @@ init : function()	{
 		            'X-CSRF-TOKEN': $('meta[name="yuu-token"]').attr('content')
 		        },
 				type: "DELETE",
-				url: self.APIUrl+"/"+uid,
+				url: self.baseUrl+"API/module/"+uid,
 				success: function(resp) {
 					try {
 						// parseData = $.parseJSON(resp);
 						parseData = resp;
 						if(parseData['statusCode'] == 204){
-							self.tblMain.draw();
+							self.tblModule.draw();
 							toastr.warning(parseData['desc']);
 						} else {
 							// $('a#active'+uid).text("ERROR");
-	        				toastr.error('Internal Server Error');
+	        				toastr.error(parseData['desc']);
 						}
 					} catch(e) {
 						console.log(e);
@@ -177,45 +195,46 @@ init : function()	{
 		$('#deleteModal').modal('show');
 		self.idDelete = uid;
 	},
-  	editModal : function(uid)	{
-	    self = this;
-		$('#editMainModal').modal('show');
-	    toastr.options = self.toastrOptions;
-	    // alert($('#check'+uid).prop('checked'));
-		$.blockUI({
-					message: '<h4> <img src='+self.baseUrl+'assets/images/ajax_loading.gif> Please wait...</h4>',
-			});
-
-		$.ajax({
-
-				headers: {
-		            'X-CSRF-TOKEN': $('meta[name="yuu-token"]').attr('content')
-		        },
-				type: "GET",
-				url: self.APIUrl+"/"+uid,
-				success: function(resp) {
-					try {
-						// parseData = $.parseJSON(resp);
-						parseData = resp;
-						if(parseData['statusCode'] == 202){
-							// $('a#active'+uid).text(parseData['data']);
-							// toastr.success(parseData['desc']);
-							$.each(parseData['data'], function(k,v){
-								$(".editMain[name=editMain"+k+"]").val(v);
-							});
-						} else {
-							// $('a#active'+uid).text("ERROR");
-	        				toastr.error('Internal Server Error');
-						}
-					} catch(e) {
-						console.log(e);
-	        			toastr.error('Internal Server Error');
-					}
-				},
-	            error: function (data) {
-	                console.log('Error:', data);
-	        		toastr.error('Connection Error');
-	            }
+  editModal : function(uid)	{
+    self = this;
+	$('#editModuleModal').modal('show');
+    toastr.options = self.toastrOptions;
+    // alert($('#check'+uid).prop('checked'));
+	$.blockUI({
+				message: '<h4> <img src='+self.baseUrl+'assets/images/ajax_loading.gif> Please wait...</h4>',
 		});
-  	},
+
+	$.ajax({
+
+			headers: {
+	            'X-CSRF-TOKEN': $('meta[name="yuu-token"]').attr('content')
+	        },
+			type: "GET",
+			url: self.baseUrl+"API/module/"+uid,
+			success: function(resp) {
+				try {
+					// parseData = $.parseJSON(resp);
+					parseData = resp;
+					if(parseData['statusCode'] == 202){
+						// $('a#active'+uid).text(parseData['data']);
+						// toastr.success(parseData['desc']);
+						$.each(parseData['data'], function(k,v){
+							$(".editModule[name=editModule_"+k+"]").val(v);
+						});
+					} else {
+						// $('a#active'+uid).text("ERROR");
+        				toastr.error('Internal Server Error');
+					}
+				} catch(e) {
+					console.log(e);
+        			toastr.error('Internal Server Error');
+				}
+			},
+            error: function (data) {
+                console.log('Error:', data);
+        		toastr.error('Connection Error');
+            }
+	});
+  	// alert(uid)
+  },
 }

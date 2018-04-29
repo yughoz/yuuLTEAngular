@@ -17,11 +17,9 @@
                     <table class="table table-striped table-hover" id="tblUser">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Groups</th>
-                                <th>Status</th>
-                                <th>Action</th>
+                             <?php $__currentLoopData = $col; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $c): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <th><?php echo e($c['label']); ?></th>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </tr>
                         </thead>
                         <tbody>
@@ -224,7 +222,15 @@
 </section>
 
     <script type="text/javascript" language="javascript" > 
-        
+        // { data: 'name', name: 'name' },
+        // { data: 'email', name: 'email' },
+            // <th><?php echo e($c['label']); ?></th>
+        data = [
+            <?php $__currentLoopData = $col; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $c): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                { data: "<?php echo e($c['name']); ?>", name: "<?php echo e($c['name']); ?>" },
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        ]
+        users_list.datat = data
         // var app = angular.module("createUserApp", []);
         // list.baseUrl = "<?php echo e(url('')); ?>/"; 
         // list.app = app;

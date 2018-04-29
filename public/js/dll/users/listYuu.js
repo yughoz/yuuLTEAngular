@@ -1,4 +1,4 @@
-groups_list = {
+users_list = {
 
 baseUrl : "",
 idDelete : "",
@@ -38,7 +38,11 @@ init : function()	{
 		});
 
 	$('#tblMain').on( 'draw.dt', function () {
-	   
+	   $('.btnC').bootstrapToggle({
+	      size:"mini",
+	      on: 'Active',
+	      off: 'Inactive'
+	    });
 	} );
 
     $(document).ajaxStop($.unblockUI);
@@ -135,6 +139,48 @@ init : function()	{
 
   },
 	
+	changeStatus : function(uid)	{
+	    self = this;
+	    toastr.options = self.toastrOptions;
+	    // alert($('#check'+uid).prop('checked'));
+			$.blockUI({
+						message: '<h4> <img src='+self.baseUrl+'assets/images/ajax_loading.gif> Please wait...</h4>',
+				});
+			if ($('#check'+uid).prop('checked') == true) {
+				active = 0;
+			} else {
+				active = 1;
+			}
+			$.ajax({
+
+					headers: {
+			            'X-CSRF-TOKEN': $('meta[name="yuu-token"]').attr('content')
+			        },
+					type: "PUT",
+					url: self.baseUrl+"API/userActive/"+uid+"/"+active,
+					success: function(resp) {
+						try {
+							// parseData = $.parseJSON(resp);
+							parseData = resp;
+							if(parseData['statusCode'] == 202){
+								// $('a#active'+uid).text(parseData['data']);
+								toastr.success(parseData['desc']);
+							} else {
+								// $('a#active'+uid).text("ERROR");
+	            				toastr.error('Internal Server Error');
+							}
+						} catch(e) {
+							console.log(e);
+	            			toastr.error('Internal Server Error');
+						}
+					},
+		            error: function (data) {
+		                console.log('Error:', data);
+	            		toastr.error('Connection Error');
+		            }
+			});
+	  	// alert(uid)
+ 	},
 
 	deleteConfirm : function(uid)	{
 	    self = this;
