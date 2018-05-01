@@ -202,6 +202,7 @@ init : function()	{
 							// toastr.success(parseData['desc']);
 							$.each(parseData['data'], function(k,v){
 								$(".editMain[name=editMain"+k+"]").val(v);
+								$(".editMain[name=editMain"+k+"]").text(v);
 							});
 						} else {
 							// $('a#active'+uid).text("ERROR");

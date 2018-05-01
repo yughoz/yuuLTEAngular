@@ -65,12 +65,12 @@ class UsersController extends YuuController
             // $this->form[] = ['name'=>'group_id','type'=>'hiden','validation'=>''];
 
             $this->formEdit = [];
+            $this->formEdit[] = ['name'=>'id','type'=>'hidden','validation'=>'required'];
             $this->formEdit[] = ['label'=>'Username','name'=>'name','type'=>'text','validation'=>'required|min:1|max:255'];
             $this->formEdit[] = ['label'=>'Email','name'=>'email','type'=>'email','validation'=>'required|string|email|max:255'];
             $this->formEdit[] = ['label'=>'Phone','name'=>'phone','type'=>'number','atrib'=>['pattern' => '^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$'],'validation'=>'required|min:1|max:255'];
             $this->formEdit[] = ['label'=>'Gender','name'=>'sex','type'=>'select','option'=>['l' => 'Male','p'=> 'Female'],'validation'=>'required|string|max:2'];
             $this->formEdit[] = ['label'=>'Member of Group','name'=>'group_id','type'=>'select','option_from'=>['table'=>'groups','key' => 'id' ,'label' => 'name'],'validation'=>'required|string|max:2'];
-            $this->formEdit[] = ['name'=>'id','type'=>'hiden','validation'=>'required'];
 
         # END FORM DO NOT REMOVE THIS LINE
 

@@ -53,9 +53,11 @@ class GroupsController extends YuuController
         # START FORM DO NOT REMOVE THIS LINE
             $this->form = [];
             $this->form[] = ['label'=>'Name','name'=>'name','type'=>'text','validation'=>'required|min:1|max:255'];
-            $this->form[] = ['label'=>'Descrition','name'=>'description','type'=>'text','validation'=>'required|min:1|max:255'];
+            $this->form[] = ['label'=>'Description','name'=>'description','type'=>'textarea','validation'=>'required|min:1|max:255'];
             $this->form[] = ['label'=>'Color','name'=>'bgcolor','type'=>'select','option'=>['blue' => 'Blue','black' => 'Black','purple' => 'Purple','yellow' => 'Yellow','red' => 'Red','green' => 'Green','blue-ligh' => 'Blue-Light','black-light' => 'Black-Light','purple-light' => 'Purple-Light','yellow-light' => 'Yellow-Light','red-light' => 'Red-Light','green-light' => 'Green-Light'],'validation'=>'required|min:1|max:255'];
             $this->formEdit = $this->form;
+            $this->formEdit[] = ['name'=>'id','type'=>'hidden','validation'=>'required'];
+
         # END FORM DO NOT REMOVE THIS LINE
 
         $this->yuuInit($request);
@@ -100,7 +102,7 @@ class GroupsController extends YuuController
      */
     public function get($uID)
     {
-        return $this->getAPI($uID);
+        return $this->getAPI($uID,$this->formEdit);
 
     }
 
@@ -113,7 +115,7 @@ class GroupsController extends YuuController
      */
     public function update(Request $request, $uID)
     {
-        return $this->updateAPI($request,$uID, $this->form);
+        return $this->updateAPI($request,$uID, $this->formEdit);
         
     }
      

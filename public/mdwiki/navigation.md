@@ -1,3 +1,5 @@
 [gimmick:theme](flatly)
 [Installing](index.md)
 [Features](features.md)
+[FormBooster](form.md)
+[Datatables](datatables.md)

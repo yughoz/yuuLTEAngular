@@ -121,6 +121,11 @@ class YuuController extends Controller
     {
         $htm = '';
         foreach ($forms as $key => $f) {
+            $valtag = $f['value'] ?? ""; 
+            if ($f['type'] == "hidden") {
+                $htm .='<input type="'.$f["type"].'" name="'.$customC.$f["name"].'" id="'.$customC.$f["name"].'" class=" '.$customC.'" '.$atrib.' value=""/>';
+                continue;
+            }
             $atrib = '';
             if (!empty($f['atrib'])) {
                 foreach ($f['atrib'] as $key => $value) {
@@ -128,11 +133,15 @@ class YuuController extends Controller
                 }
             }
 
+            if (strpos($f["validation"], 'required') !== false) {
+                $f["label"] .= ' <span class="text-danger" title="This field is required">*</span>';
+                $atrib .= "required ";
+            }
             $htm .='<div class="form-group">';
             $htm .='    <label for='.$f["name"].' class="col-sm-2 control-label">'.$f["label"].'</label>';
             $htm .='    <div class="col-sm-10">';
             if (in_array($f["type"], ['text','email','number','password'])) {
-                $htm .='        <input type="'.$f["type"].'" name="'.$customC.$f["name"].'" id="'.$customC.$f["name"].'" class="form-control '.$customC.'" '.$atrib.' value=""/>';
+                $htm .='        <input type="'.$f["type"].'" name="'.$customC.$f["name"].'" id="'.$customC.$f["name"].'" class="form-control '.$customC.'" '.$atrib.' value="'.$valtag.'"/>';
             } elseif ($f['type'] == "select") {
                 if (!empty($f['option_from'])) {
                     $dbOption = DB::table($f['option_from']['table'])->get();
@@ -147,6 +156,8 @@ class YuuController extends Controller
                     $htm .='        <option value="'.$key.'">'.$o.'</option>';
                 }
                 $htm .='        </select>';
+            } elseif ($f['type'] == "textarea") {
+               $htm .= '     <textarea name="'.$customC.$f["name"].'" id="'.$customC.$f["name"].'"  class="form-control '.$customC.'" '.$atrib.'>'.$valtag.'</textarea>';
             }
             $htm .='    </div>';
             $htm .='</div>';
@@ -181,6 +192,25 @@ class YuuController extends Controller
                     });
         }
         return $dtbs;
+    }
+
+
+    public function downloadExcel($type)
+    {
+        $data = DB::table($this->table)->get()->toArray();
+        $data = json_decode(json_encode($data),true);
+        // echo print_r($data);die();
+        return Excel::create($this->table.'_'.$type.'_'.time(), function($excel) use ($data) {
+            $excel->sheet('mySheet', function($sheet) use ($data)
+            {
+                $sheet->fromArray($data);
+            });
+        })->download($type);
+    }
+
+    public function toArray(&$arr)
+    {
+        $arr = json_decode(json_encode($arr),true);
     }
 
     public function columndt()

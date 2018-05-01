@@ -46,9 +46,9 @@ class RoleController extends Controller
                                 "text" => $value['text'],
                                 "module_code" => $value['module_code'],
                             ];
-                if (!empty($value['submenu'])) {
-                    $this->getModules($value['submenu'], $modules);
-                }
+            }
+            if (!empty($value['submenu'])) {
+                $this->getModules($value['submenu'], $modules);
             }
         }
 
