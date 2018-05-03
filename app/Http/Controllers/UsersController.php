@@ -27,7 +27,6 @@ class UsersController extends YuuController
     {
         $this->middleware('auth');
 
-
         $this->table = "users";
         $this->accessRole = "users";
         $this->label = "Users";
@@ -37,6 +36,8 @@ class UsersController extends YuuController
         $this->action_btn = true;
         $this->action_btn_add = true;
         $this->action_btn_edit = true;
+        $this->btn_import = true;
+        $this->btn_export = true;
         $this->action_btn_delete = true;
 
         # START COLUMNS DO NOT REMOVE THIS LINE
@@ -72,6 +73,20 @@ class UsersController extends YuuController
             $this->formEdit[] = ['label'=>'Gender','name'=>'sex','type'=>'select','option'=>['l' => 'Male','p'=> 'Female'],'validation'=>'required|string|max:2'];
             $this->formEdit[] = ['label'=>'Member of Group','name'=>'group_id','type'=>'select','option_from'=>['table'=>'groups','key' => 'id' ,'label' => 'name'],'validation'=>'required|string|max:2'];
 
+        # END FORM DO NOT REMOVE THIS LINE
+
+        # START FORM DO NOT REMOVE THIS LINE
+            $this->hiddenField = ['password','remember_token','last_login'];
+            $this->importArr = [
+                'id',
+                'name',
+                'email',
+                'created_at',
+                'updated_at',
+                'last_login',
+                'phone',
+                'active'
+            ];
         # END FORM DO NOT REMOVE THIS LINE
 
         $this->yuuInit($request);
@@ -123,6 +138,16 @@ class UsersController extends YuuController
         #custome datatable yajra in here        
         return $datatables->make(true);
     }
+    public function export(Request $request)
+    {
+        $this->selectsql = array_keys($request->input('exportField'));
+        return $this->downloadExcel();
+    }
+    public function import(Request $request)
+    {
+        $this->selectsql = ['id','name','email','phone'];
+        return $this->importExcel($request);
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -158,6 +183,19 @@ class UsersController extends YuuController
         
     }
      
+    public function hook_before_add_api(&$arrUpdate) {
+        if (!empty($arrUpdate['password'])) {
+            $arrUpdate['password'] = bcrypt($arrUpdate['password']);    
+        } else {
+            $arrUpdate['password'] = bcrypt("password");    
+        }
+        if (empty($arrUpdate['created_at'])) {
+            $arrUpdate['created_at'] = new \DateTime();
+        }
+        if (empty($arrUpdate['updated_at'])) {
+            $arrUpdate['updated_at'] = new \DateTime();
+        }
+    }
     public function hook_before_edit_api(&$arrUpdate ,$request ) {
          if (!empty($request['editMainpassword'])) {
             $pars['password'] = $request['editMainpassword'];

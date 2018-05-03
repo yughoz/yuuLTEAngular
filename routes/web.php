@@ -33,6 +33,7 @@ Route::get('/dummy3', 'DummyController@dummy3');
 Route::get('/dummy4', 'DummyController@dummy4');
 Route::get('/dummy5', 'DummyController@dummy5');
 // Route::get('/admin/users', 'UserController@index')->name('user');
+
 Route::get('/admin/users', 'UsersController@index')->middleware('role:users');
 Route::get('/admin/editProfile', 'UsersController@editProfile')->name('userdata.editProfile')->middleware('role:users');
 
@@ -62,6 +63,8 @@ Route::put('/API/userActive/{id}/{active}','UsersController@active')->name('user
 
 Route::group(['prefix' => 'API/user'], function(){
 	Route::get('/list','UsersController@anyData')->name('userdata.data')->middleware('role:users--readAcc');
+	Route::get('/export','UsersController@export')->name('userdata.data')->middleware('role:users--readAcc');
+	Route::post('/import','UsersController@import')->name('userdata.data')->middleware('role:users--readAcc');
 	Route::post('','UsersController@create')->middleware('role:users--createAcc');
 	Route::get('{id}','UsersController@get')->name('userdata.get')->middleware('role:users--readAcc');
 	Route::post('{id}','UsersController@update')->name('userdata.update')->middleware('role:users--updateAcc');

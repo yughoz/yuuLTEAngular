@@ -54,7 +54,6 @@ yuuAPP.config(function($stateProvider, $urlRouterProvider, $ocLazyLoadProvider ,
                 users_list.baseUrl = yuuAPP.baseUrl; 
                 users_list.app = app;
                 users_list.init();
-                $scope.title = "User Management";
             },
             resolve: {
                 loadMyFiles: function($ocLazyLoad) {

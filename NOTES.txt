@@ -1,0 +1,14 @@
+GET field kolom
+buat funtion untuk selectsql
+jika dia belum di set maka select dari db
+jika sudah return selectsql
+
+import generik 
+berdasarkan field langsung dari db tanpa harus ngetik manual
+
+filtering export 
+-> bisa csv dan xlsx
+-> field apa saja yg di export ambil dari selectsql
+-> banyak fieldnya
+-> tgl mulai dan akhir
+

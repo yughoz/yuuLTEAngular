@@ -90,6 +90,63 @@ init : function()	{
 			});
 		}));
 
+	$('#containerAlertImport').hide();
+    $("#form-export_main").on('submit',(function(e) {
+			e.preventDefault();
+			var formData = $( this ).serialize();
+		   	window.location = self.APIUrl+"/export?"+formData;
+		}));
+    $("#form-import_main").on('submit',(function(e) {
+			e.preventDefault();
+			$('#alertImport').html('');
+			$('#containerAlertImport').hide();
+			$('#bgcolor').modal('hide');
+			$.blockUI({
+				// 
+                message: '<h4>  Please wait... <img src='+self.baseUrl+'public/images/spinner.gif></h4>',
+            });
+			$.ajax({
+				headers: {
+		            'X-CSRF-TOKEN': $('meta[name="yuu-token"]').attr('content')
+		        },
+				url: self.APIUrl+"/import", // Url to which the request is send
+				type: "POST",             // Type of request to be send, called as method
+				data: new FormData(this), // Data sent to server, a set of key/value pairs (i.e. form fields and values)
+				contentType: false,       // The content type used when sending data to the server.
+				cache: false,             // To unable request pages to be cached
+				processData:false,        // To send DOMDocument or non processed data file it is set to false
+				success: function(resp)   // A function to be called if request succeeds
+				{
+					try {
+						parseData = resp;
+						if(parseData['statusCode'] == 200){
+							document.getElementById("form-import_main").reset();
+							self.tblMain.draw();
+							toastr.success(parseData['desc']);
+
+							if (parseData['error']!= null && parseData['error'] != undefined) {
+								$('#alertImport').html(parseData['error']);
+								$('#containerAlertImport').show();
+							}
+						} else{
+							toastr.warning(parseData['desc']);
+							toastr.warning(parseData['error'].join('<br>'));
+							$('#importModal').modal('show');
+						}
+					} catch(e) {
+						console.log(e);
+            			toastr.error('Internal Server Error');
+						$('#importModal').modal('show');
+					}
+				},
+	            error: function (data) {
+	                console.log('Error:', data);
+            		toastr.error('Connection Error');
+					$('#importModal').modal('show');
+	            }
+			});
+		}));
+
     $("#form-edit_main").on('submit',(function(e) {
 			e.preventDefault();
 			$('#editMainModal').modal('hide');

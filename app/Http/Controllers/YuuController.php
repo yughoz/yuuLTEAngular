@@ -7,6 +7,7 @@ use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Excel;
 
 
 class YuuController extends Controller
@@ -21,7 +22,14 @@ class YuuController extends Controller
     public $action_btn_add = false;
     public $action_btn_edit = false;
     public $action_btn_delete = false;
+    public $btn_export = false;
+    public $btn_import = false;
     public $selectsql = [] ;
+    public $hiddenField = [] ;
+    public $importArr = [] ;
+    public $form = [];
+    public $formEdit = [];
+    public $formImport = [];
     private $startTime;
     protected $hiddenReq = [
         'password','password_confirm','columns'
@@ -32,6 +40,7 @@ class YuuController extends Controller
 
     public function yuuInit(Request $request)
     {
+        date_default_timezone_set('Asia/Jakarta');   
         $this->request = $request->all();
         $this->startTime = microtime(true);
     }
@@ -90,9 +99,13 @@ class YuuController extends Controller
         $APIUrl = $this->APIUrl;
         $jsClass = $this->jsClass;
         $action_btn_add = $this->action_btn_add;
+        $btn_import = $this->btn_import;
+        $btn_export = $this->btn_export;
+        $importArr = $this->importArr;
         $formsAdd = $this->formHtml($this->form);
         $formsEdit = $this->formHtml($this->formEdit,'editMain');
-        return view($view,compact('title','jsClass','col','label','APIUrl','formsAdd','formsEdit' ,'action_btn_add'));
+        $selectsql = $this->get_column();
+        return view($view,compact('title','jsClass','col','label','APIUrl','formsAdd','formsEdit' ,'action_btn_add','btn_export','btn_import','importArr','selectsql'));
     }
     public function formCreateValidation($form = "") {
         if (empty($form)) {
@@ -195,19 +208,100 @@ class YuuController extends Controller
     }
 
 
-    public function downloadExcel($type)
+    public function downloadExcel($type="xlsx")
     {
-        $data = DB::table($this->table)->get()->toArray();
-        $data = json_decode(json_encode($data),true);
+        $arrData = DB::table($this->table)->select($this->selectsql)->get()->toArray();
+        $data = json_decode(json_encode($arrData),true);
+        // $data = [];
+        // foreach ($arrData as $key => $value) {
+            // foreach ($value as $key2 => $val) {
+            //     if (in_array($key2, $this->hiddenField)) {
+            //         unset($value);
+            //         echo $key2;
+            //     }else {
+            //         $data[] = $value;
+            //     }
+            // }
+        // }
         // echo print_r($data);die();
         return Excel::create($this->table.'_'.$type.'_'.time(), function($excel) use ($data) {
-            $excel->sheet('mySheet', function($sheet) use ($data)
+            $excel->sheet('sheet1', function($sheet) use ($data)
             {
                 $sheet->fromArray($data);
             });
         })->download($type);
     }
 
+
+    public function importExcel(Request $request)
+    {
+        if($request->hasFile('import_file')){
+            $path = $request->file('import_file')->getRealPath();
+            $data = Excel::load($path, function($reader) {
+            })->get();
+            if(!empty($data) && $data->count()){
+                $row = 1;
+                $failrow = '';
+                foreach ($data as $key => $value) {
+                    $vaaArr = [];
+                    foreach ($this->importArr as $key => $ins) {
+                        if (!empty($value->$ins)) {
+                            $vaaArr[$ins] = $value->$ins;
+                        }
+                    }
+                    if (count($vaaArr) > 0) {
+                        if ($hook_before_add_api = $this->hook_before_add_api($vaaArr)) {
+                            return $hook_before_add_api;
+                        }
+                        $insert[] = $vaaArr;
+                    }
+                }
+                if(!empty($insert)){
+                    $failcatch = [];
+                    $rowInt = 1;
+                    $successRow = 0;
+                    foreach ($insert as $key => $ins) {
+                        try {
+                            $rowInt++;
+                            DB::table($this->table)->insert($ins);
+                            $successRow++;
+                        } catch (\Exception $e) {
+                            $failcatch[] = $this->parseCatch($e->getMessage())."in Row :".$rowInt;
+                        }
+                    }
+
+                    $result = [
+                        'status'=>'success',
+                        'statusCode'=>'200',
+                        'desc'=>'success insert ('.$successRow.') data',
+                        'lastID'=> $resultID,
+                        'success'=>'Added new records.',
+                        'error' => implode('<br>', $failcatch)
+                    ];
+                    return response()->json($result);
+                }
+            }
+        }
+    }
+
+    public function parseCatch($str)
+    {
+        $header = substr($str, 0,15);
+        $headerErr = ['SQLSTATE[HY000]','SQLSTATE[23000]'];
+        // $subErr = ['1062','1364'];
+        if (in_array($header, $headerErr)) {
+            $titikdua = explode(':', $str);
+            $str = str_replace('(SQL', '', $titikdua[2]);
+            $subErr = substr($str, 0,5);
+            if (intval($subErr) > 0) {
+                $str = str_replace($subErr, '', $str);
+            }
+
+            // $str = str_replace('1364', '', $str);
+        };
+
+        return $str;
+    }
     public function toArray(&$arr)
     {
         $arr = json_decode(json_encode($arr),true);
@@ -247,6 +341,10 @@ class YuuController extends Controller
             //     $paramInsert[$key] = $request->input($key);
             // }
 
+            if ($hook_before_add_api = $this->hook_before_add_api($paramInsert)) {
+                return $hook_before_add_api;
+            }
+
             $resultID = DB::table($this->table)->insertGetId($paramInsert);
 
             $result = [
@@ -276,16 +374,16 @@ class YuuController extends Controller
         }
         // $form = $form ?? $this->form;              
         // echo print_r($form);die();
-        $this->selectsql = [];
-        foreach ($form as $key => $value) {
-            if (isset($value['dbcustom']) && $value['dbcustom'] === true) {
-            } elseif (isset($value['unset']) && $value['unset'] === true) {
-            } else {
-                $this->selectsql[] = $this->table.".".$value['name'];
-            }
-        }
+        // $this->selectsql = [];
+        // // foreach ($form as $key => $value) {
+        // //     if (isset($value['dbcustom']) && $value['dbcustom'] === true) {
+        // //     } elseif (isset($value['unset']) && $value['unset'] === true) {
+        // //     } else {
+        // //         $this->selectsql[] = $this->table.".".$value['name'];
+        // //     }
+        // // }
 
-        $datas = DB::table($this->table)->select($this->selectsql)->where('id', $uID)->first();
+        $datas = DB::table($this->table)->select($this->get_column())->where('id', $uID)->first();
 
         $this->apiLog('api_get_'.$this->table,$uID);
         return response()->json([
@@ -358,6 +456,26 @@ class YuuController extends Controller
                                         'desc'=>'success delete data'
                                     ]);
     }
+    public function get_column($hidden = true)
+    {
+        $selectsql = [];
+        if (!empty($this->selectsql)) {
+            return $this->selectsql;
+        }
+        $datas = DB::table($this->table)->first();
+        $this->toArray($datas);
+        if($hidden && !empty($this->hiddenField)) {
+            foreach ($datas as $key => $value) {
+                    if (!in_array($key, $this->hiddenField)) {
+                        $selectsql[] = $key;
+                    }
+            }
+        } else {
+            return array_keys($datas);
+        }
+        // echo print_r(array_keys($datas));die();
+        return $selectsql;
+    }
     public function hook_query_index(&$query)
     {
     }
@@ -366,6 +484,9 @@ class YuuController extends Controller
     {
     }
 
+    public function hook_before_add_api(&$arr)
+    {
+    }
     public function hook_before_add(&$arr)
     {
     }
