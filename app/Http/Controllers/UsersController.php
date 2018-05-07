@@ -77,16 +77,16 @@ class UsersController extends YuuController
 
         # START FORM DO NOT REMOVE THIS LINE
             $this->hiddenField = ['password','remember_token','last_login'];
-            $this->importArr = [
-                'id',
-                'name',
-                'email',
-                'created_at',
-                'updated_at',
-                'last_login',
-                'phone',
-                'active'
-            ];
+            // $this->importArr = [
+            //     'id',
+            //     'name',
+            //     'email',
+            //     'created_at',
+            //     'updated_at',
+            //     'last_login',
+            //     'phone',
+            //     'active'
+            // ];
         # END FORM DO NOT REMOVE THIS LINE
 
         $this->yuuInit($request);
@@ -140,8 +140,7 @@ class UsersController extends YuuController
     }
     public function export(Request $request)
     {
-        $this->selectsql = array_keys($request->input('exportField'));
-        return $this->downloadExcel();
+        return $this->downloadExcel($request);
     }
     public function import(Request $request)
     {
