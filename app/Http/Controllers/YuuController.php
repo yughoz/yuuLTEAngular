@@ -208,28 +208,43 @@ class YuuController extends Controller
     }
 
 
-    public function downloadExcel($type="xlsx")
+    public function downloadExcel(Request $request,$type="xlsx")
     {
-        $arrData = DB::table($this->table)->select($this->selectsql)->get()->toArray();
-        $data = json_decode(json_encode($arrData),true);
-        // $data = [];
-        // foreach ($arrData as $key => $value) {
-            // foreach ($value as $key2 => $val) {
-            //     if (in_array($key2, $this->hiddenField)) {
-            //         unset($value);
-            //         echo $key2;
-            //     }else {
-            //         $data[] = $value;
-            //     }
+        $arrValidator = ['exportField' =>  'required'];
+        $validator = Validator::make($request->all(), $arrValidator);
+        if ($validator->passes()) {
+            $this->selectsql = array_keys($request->input('exportField'));
+            $arrData = DB::table($this->table)->select($this->selectsql)->get()->toArray();
+            $data = json_decode(json_encode($arrData),true);
+            // $data = [];
+            // foreach ($arrData as $key => $value) {
+                // foreach ($value as $key2 => $val) {
+                //     if (in_array($key2, $this->hiddenField)) {
+                //         unset($value);
+                //         echo $key2;
+                //     }else {
+                //         $data[] = $value;
+                //     }
+                // }
             // }
-        // }
-        // echo print_r($data);die();
-        return Excel::create($this->table.'_'.$type.'_'.time(), function($excel) use ($data) {
-            $excel->sheet('sheet1', function($sheet) use ($data)
-            {
-                $sheet->fromArray($data);
-            });
-        })->download($type);
+            // echo print_r($data);die();
+            return Excel::create($this->table.'_'.$type.'_'.time(), function($excel) use ($data) {
+                $excel->sheet('sheet1', function($sheet) use ($data)
+                {
+                    $sheet->fromArray($data);
+                });
+            })->download($type);
+        } else {
+            $result = [
+                            'status'=>'validate',
+                            'statusCode'=> 501,
+                            'desc'=>'Validate',
+                            'error'=> $validator->errors()->all()
+                        ];
+            return response()->json($result);
+        }
+
+        
     }
 
 
@@ -239,6 +254,9 @@ class YuuController extends Controller
             $path = $request->file('import_file')->getRealPath();
             $data = Excel::load($path, function($reader) {
             })->get();
+            if (empty($this->importArr)) {
+                $this->importArr = $this->get_column();
+            }
             if(!empty($data) && $data->count()){
                 $row = 1;
                 $failrow = '';

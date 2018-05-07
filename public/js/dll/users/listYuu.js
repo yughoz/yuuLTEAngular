@@ -124,7 +124,7 @@ init : function()	{
 							self.tblMain.draw();
 							toastr.success(parseData['desc']);
 
-							if (parseData['error']!= null && parseData['error'] != undefined) {
+							if (parseData['error']!= null && parseData['error'] != undefined && parseData['error'] != "") {
 								$('#alertImport').html(parseData['error']);
 								$('#containerAlertImport').show();
 							}
