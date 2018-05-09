@@ -476,23 +476,27 @@ class YuuController extends Controller
     }
     public function get_column($hidden = true)
     {
-        $selectsql = [];
-        if (!empty($this->selectsql)) {
-            return $this->selectsql;
-        }
-        $datas = DB::table($this->table)->first();
-        $this->toArray($datas);
-        if($hidden && !empty($this->hiddenField)) {
-            foreach ($datas as $key => $value) {
-                    if (!in_array($key, $this->hiddenField)) {
-                        $selectsql[] = $key;
-                    }
+        $cols = collect(DB::select('SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = :database AND TABLE_NAME = :table', [
+            'database' => config('database.connections.mysql.database'),
+            'table' => $this->table,
+        ]))->map(function ($x) {
+            return (array) $x;
+        })->toArray();
+
+        $result = [];
+        $result = $cols;
+
+        $new_result = [];
+        foreach ($result as $ro) {
+            if($hidden && !empty($this->hiddenField)) {
+                if (!in_array($ro['COLUMN_NAME'], $this->hiddenField)) {
+                    $new_result[] = $ro['COLUMN_NAME'];
+                }
+            } else {
+                $new_result[] = $ro['COLUMN_NAME'];
             }
-        } else {
-            return array_keys($datas);
         }
-        // echo print_r(array_keys($datas));die();
-        return $selectsql;
+        return $new_result;
     }
     public function hook_query_index(&$query)
     {

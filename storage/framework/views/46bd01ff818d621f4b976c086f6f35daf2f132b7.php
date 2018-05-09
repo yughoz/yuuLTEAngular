@@ -195,7 +195,8 @@
                 'appName':"<?php echo e(config('app.name', 'yuuLTE')); ?>" 
                 }; 
         // yuuAPP.socket = io.connect('http://serveragscom-as.cloud.revoluz.io:49707',{query:"name=<?php echo e(Auth::user()->name); ?>,appName=<?php echo e(config('app.name', 'yuuLTE')); ?>,"});
-        yuuAPP.socket = io.connect('http://serveragscom-as.cloud.revoluz.io:49707',{query:"name="+JSON.stringify(queryParam)});
+        // yuuAPP.socket = io.connect('http://serveragscom-as.cloud.revoluz.io:49707',{query:"name="+JSON.stringify(queryParam)});
+        yuuAPP.socket = io.connect('http://192.168.56.101:3000',{query:"name=<?php echo e(Auth::user()->name); ?>"});
             // yuuAPP.socket = io.connect('http://serveragscom-as.cloud.revoluz.io:4971',{query:"name=<?php echo e(Auth::user()->name); ?>"});
 
     </script>
