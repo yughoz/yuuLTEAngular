@@ -1,3 +1,98 @@
+		#MATERAI INSERT
+		$service_url2 = API_EINVOICE.'GetEmaterai/'; 
+		// $service_url2 = 'http://localhost/einvoice_api_dev/wsapi/index.php/GetEmaterai'; 
+		// echo $service_url2;die();
+
+		$QryReloadD = "SELECT * from NOTA_RELOAD_H Where ID_REQ ='$no_req'";
+		$resultReloadD = $db->query($QryReloadD);
+		$dataReloadH = $resultReloadD->fetchRow();
+		if (is_file("C:\server\htdocs\dummy\debug\debugUpper.txt")) {
+			file_put_contents("C:\server\htdocs\dummy\debug\debugUpper.txt", print_r(
+		         	array(
+		         		"dataReloadH" => $dataReloadH,
+		         ),true), FILE_APPEND);
+		}
+		$Param = array(
+							'BRANCH_CODE' => 'JBI', 
+							'HEADER_CONTEXT' => 'PTKM', 
+							'ORG_ID' => '89', 
+							'TOTAL_TAGIHAN' => intval($dataReloadH['TOTAL']), 
+						);
+		$curl2 = curl_init($service_url2);
+		curl_setopt($curl2, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl2, CURLOPT_POST, true);
+		curl_setopt($curl2, CURLOPT_POSTFIELDS, $Param);
+		$curl_response2 = curl_exec($curl2);
+		$data= json_decode($curl_response2,true);
+		curl_close($curl2);
+
+		/*if (is_file("C:\server\htdocs\dummy\debug\debugUpper.txt")) {
+			file_put_contents("C:\server\htdocs\dummy\debug\debugUpper.txt", print_r(
+		         	array(
+		         		"curl_response2" => $curl_response2,
+		         ),true), FILE_APPEND);
+		}*/
+
+		if ($data['status'] == "success") {
+			
+	         $materai = intval($data['data']['NILAI_MATERAI']);
+	         $TOTAL = intval($dataReloadH['TOTAL'])+$materai;
+			$QryUpH = "Update NOTA_RELOAD_H SET TOTAL='$TOTAL',materai='$materai' Where ID_REQ ='$no_req'";
+			$QryUpdate = $db->query($QryUpH);
+
+			/*if (is_file("C:\server\htdocs\dummy\debug\debugUpper.txt")) {
+				file_put_contents("C:\server\htdocs\dummy\debug\debugUpper.txt", print_r(
+			         	array(
+			         		"QryUpdate" => "if",
+			         		"QryUpH" => $QryUpH,
+			         ),true), FILE_APPEND);
+			}*/
+			if($QryUpdate){
+				$QryCount = "SELECT * from NOTA_RELOAD_D Where ID_REQ ='$no_req'";
+				$result_count = $db->query($QryCount);
+				$dataReloadD = $result_count->fetchRow();
+				// $line = $dataReloadD->JML + 1;
+
+				/*if (is_file("C:\server\htdocs\dummy\debug\debugUpper.txt")) {
+					file_put_contents("C:\server\htdocs\dummy\debug\debugUpper.txt", print_r(
+				         	array(
+				         		"dataReloadD" => $dataReloadD,
+				         ),true), FILE_APPEND);
+				}*/
+				$QryUpH = "INSERT INTO NOTA_RELOAD_D (ID_NOTA,ID_REQ,TARIF,SUB_TOTAL) VALUES ('".$dataReloadD['ID_NOTA']."','$no_req','$materai','$materai')";
+				$QryUpdate = $db->query($QryUpH);
+
+				/*if (is_file("C:\server\htdocs\dummy\debug\debugUpper.txt")) {
+					file_put_contents("C:\server\htdocs\dummy\debug\debugUpper.txt", print_r(
+				         	array(
+				         		"end" => "end",
+				         		"QryUpdate" => $QryUpdate,
+				         		"QryUpH" => $QryUpH,
+				         ),true), FILE_APPEND);
+				}*/
+			}
+			# code...
+		}
+
+		$QryCount = "SELECT * from NOTA_RELOAD_D Where ID_REQ ='$no_req'  AND KETERANGAN = 'materai'";
+				$result_count = $db->query($QryCount);
+				$dataReloadD = $result_count->fetchRow();
+				
+		#MATERAI INSERT END
+
+
+
+	        $materai = intval($data['data']['NILAI_MATERAI']);
+			$QryUpH = "Update NOTA_RELOAD_H SET materai='$materai' Where ID_REQ ='$no_req'";
+			$QryUpdate = $db->query($QryUpH);
+
+
+
+		$QryReloadD = "SELECT * from NOTA_RELOAD_H Where ID_REQ ='$no_req'";
+		$resultReloadD = $db->query($QryReloadD);
+		$dataReloadH = $resultReloadD->fetchRow();
+
+
 GET field kolom
 buat funtion untuk selectsql
 jika dia belum di set maka select dari db
@@ -12,3 +107,31 @@ filtering export
 -> banyak fieldnya
 -> tgl mulai dan akhir
 
+admin entity => ngebaca semua data yg ada di unit yg berdasarkan entity 
+				unit itu aja
+
+admin unit => fokus ke unit tersebut
+
+user => berdasarkan unit tersebut tapi bersarkan layanannya
+
+
+meterai di nbs
+List table yg di gunakan utk setiap jenis nota jg blm di list trnyata
+
+dev
+svn://192.168.23.62/svn/einvoice_api_dev
+svn://192.168.23.62/svn/ibis_qa
+
+prod
+svn://192.168.23.62/svn/einvoice_api_prod
+svn://192.168.23.62/svn/ibis_prod
+
+ibis
+10.10.33.137:2222
+root
+IPCP@ssw0rd@2018!
+
+API
+10.10.33.56:2222
+root
+IPCP@ssw0rd

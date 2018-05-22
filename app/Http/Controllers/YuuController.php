@@ -24,6 +24,7 @@ class YuuController extends Controller
     public $action_btn_delete = false;
     public $btn_export = false;
     public $btn_import = false;
+    public $paramView = [] ;
     public $selectsql = [] ;
     public $hiddenField = [] ;
     public $importArr = [] ;
@@ -93,19 +94,19 @@ class YuuController extends Controller
     }
 
     public function yuuView($view = 'vendor.yuu.list') {
-        $col = $this::columndt();
-        $title = $this->title;
-        $label = $this->label;
-        $APIUrl = $this->APIUrl;
-        $jsClass = $this->jsClass;
-        $action_btn_add = $this->action_btn_add;
-        $btn_import = $this->btn_import;
-        $btn_export = $this->btn_export;
-        $importArr = $this->importArr;
-        $formsAdd = $this->formHtml($this->form);
-        $formsEdit = $this->formHtml($this->formEdit,'editMain');
-        $selectsql = $this->get_column();
-        return view($view,compact('title','jsClass','col','label','APIUrl','formsAdd','formsEdit' ,'action_btn_add','btn_export','btn_import','importArr','selectsql'));
+        $this->paramView['col'] = $this::columndt();
+        $this->paramView['title'] = $this->title;
+        $this->paramView['label'] = $this->label;
+        $this->paramView['APIUrl'] = $this->APIUrl;
+        $this->paramView['jsClass'] = $this->jsClass;
+        $this->paramView['action_btn_add'] = $this->action_btn_add;
+        $this->paramView['btn_import'] = $this->btn_import;
+        $this->paramView['btn_export'] = $this->btn_export;
+        $this->paramView['importArr'] = $this->importArr;
+        $this->paramView['formsAdd'] = $this->formHtml($this->form);
+        $this->paramView['formsEdit'] = $this->formHtml($this->formEdit,'editMain');
+        $this->paramView['selectsql'] = $this->get_column();
+        return view($view,$this->paramView);
     }
     public function formCreateValidation($form = "") {
         if (empty($form)) {
@@ -263,8 +264,11 @@ class YuuController extends Controller
                 foreach ($data as $key => $value) {
                     $vaaArr = [];
                     foreach ($this->importArr as $key => $ins) {
+                        $insUpper = strtoupper($ins);
                         if (!empty($value->$ins)) {
                             $vaaArr[$ins] = $value->$ins;
+                        } elseif (!empty($value->$insUpper)) {
+                            $vaaArr[$ins] = $value->$insUpper;
                         }
                     }
                     if (count($vaaArr) > 0) {
