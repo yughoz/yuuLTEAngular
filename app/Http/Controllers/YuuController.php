@@ -95,6 +95,7 @@ class YuuController extends Controller
 
     public function yuuView($view = 'vendor.yuu.list') {
         $this->paramView['col'] = $this::columndt();
+        $this->paramView['accessRole'] = $this->accessRole;
         $this->paramView['title'] = $this->title;
         $this->paramView['label'] = $this->label;
         $this->paramView['APIUrl'] = $this->APIUrl;
@@ -192,6 +193,10 @@ class YuuController extends Controller
 
         $tb = DB::table($this->table)
             ->select($this->selectsql);
+
+        if ($hook_before_select = $this->hook_before_select($tb)) {
+            return $hook_before_select;
+        }
         $dtbs = Datatables::of($tb);
         if ($this->action_btn) {
             $dtbs->addColumn('action', function ($table) {
@@ -529,6 +534,10 @@ class YuuController extends Controller
     }
 
     public function hook_after_edit($arr,$id)
+    {
+    }
+
+    public function hook_before_select(&$tb)
     {
     }
 
