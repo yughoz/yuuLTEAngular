@@ -22,6 +22,7 @@ class YuuController extends Controller
     public $action_btn_add = false;
     public $action_btn_edit = false;
     public $action_btn_delete = false;
+    public $action_btn_truncate = false;
     public $btn_export = false;
     public $btn_import = false;
     public $paramView = [] ;
@@ -101,6 +102,7 @@ class YuuController extends Controller
         $this->paramView['APIUrl'] = $this->APIUrl;
         $this->paramView['jsClass'] = $this->jsClass;
         $this->paramView['action_btn_add'] = $this->action_btn_add;
+        $this->paramView['action_btn_truncate'] = $this->action_btn_truncate;
         $this->paramView['btn_import'] = $this->btn_import;
         $this->paramView['btn_export'] = $this->btn_export;
         $this->paramView['importArr'] = $this->importArr;
@@ -483,6 +485,25 @@ class YuuController extends Controller
                                         'desc'=>'success delete data'
                                     ]);
     }
+    public function truncateAPI()
+    {
+        if ($hook_before_truncate = $this->hook_before_truncate()) {
+            return $hook_before_truncate;
+        }
+
+        DB::table($this->table)
+            ->truncate();
+
+        if ($hook_after_truncate = $this->hook_after_truncate()) {
+            return $hook_after_truncate;
+        }
+        
+        return response()->json([
+                                        'status'=>'truncate',
+                                        'statusCode'=>'204',
+                                        'desc'=>'success truncate data'
+                                    ]);
+    }
     public function get_column($hidden = true)
     {
         $cols = collect(DB::select('SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = :database AND TABLE_NAME = :table', [
@@ -546,6 +567,13 @@ class YuuController extends Controller
     }
 
     public function hook_after_delete($id)
+    {
+    }
+    public function hook_before_truncate()
+    {
+    }
+
+    public function hook_after_truncate()
     {
     }
 }
